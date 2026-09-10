@@ -160,6 +160,22 @@ select {
   margin-bottom: 22px;
 }
 
+.notice,
+.settings-steps {
+  color: var(--ink-soft);
+}
+
+.notice {
+  background: #fff4e5;
+  border: 1px solid #ead2a8;
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+
+.settings-steps {
+  padding-inline-start: 1.2rem;
+}
+
 .search-shell {
   display: flex;
   align-items: center;

@@ -32,13 +32,17 @@ function readJson<T>(key: string, fallback: T): T {
   }
 }
 
+export function parseStoredSongs(data: unknown, source: Song['source']): Song[] {
+  if (!Array.isArray(data)) return []
+  return data.map((raw) => asSong(raw as StoredSong, source))
+}
+
 export async function loadCatalogSongs(): Promise<Song[]> {
   const response = await fetch(`${import.meta.env.BASE_URL}songs.json`, {
     cache: 'no-cache',
   })
   if (!response.ok) return []
-  const data = (await response.json()) as StoredSong[]
-  return data.map((song) => asSong(song, 'catalog'))
+  return parseStoredSongs(await response.json(), 'catalog')
 }
 
 export function loadLocalSongs(): Song[] {

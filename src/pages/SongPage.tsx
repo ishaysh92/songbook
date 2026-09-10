@@ -6,7 +6,7 @@ import { toSpotifyUri } from '../lib/spotifyTrack'
 export function SongPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { songs, removeSong } = useSongs()
+  const { songs, removeSong, saving } = useSongs()
   const { playTrack, connected, busy, login, clientId } = useSpotify()
   const song = songs.find((item) => item.id === id)
 
@@ -67,11 +67,12 @@ export function SongPage() {
           <button
             type="button"
             className="text-button danger"
+            disabled={saving}
             onClick={() => {
-              if (window.confirm(`למחוק את „${song.title}”?`)) {
-                removeSong(song.id)
-                navigate('/')
-              }
+              if (!window.confirm(`למחוק את „${song.title}”?`)) return
+              void removeSong(song.id)
+                .then(() => navigate('/'))
+                .catch(() => undefined)
             }}
           >
             מחיקה

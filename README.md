@@ -34,4 +34,6 @@ VITE_SPOTIFY_CLIENT_ID=your_client_id
 
 ## שמירת שירים
 
-שירים שמתווספים בדפדפן נשמרים במכשיר הנוכחי. כדי לשתף אותם עם כולם, ייצאו JSON בהגדרות והחליפו את `public/songs.json`.
+הספר נטען מ-`public/songs.json` ב-GitHub, כדי שכל מכשיר יראה את אותו אוסף.
+
+כדי **להוסיף או לערוך** שירים לכל העולם, הדביקו בהגדרות Fine-grained token עם הרשאת Contents: Read and write לריפו. בלי אסימון אפשר רק לצפות.

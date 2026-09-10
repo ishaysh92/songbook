@@ -25,20 +25,21 @@ function songToDraft(song?: Song): SongDraft {
 type SongFormProps = {
   song?: Song
   submitLabel: string
-  onSubmit: (draft: SongDraft) => void
+  busy?: boolean
+  onSubmit: (draft: SongDraft) => void | Promise<void>
 }
 
-export function SongForm({ song, submitLabel, onSubmit }: SongFormProps) {
+export function SongForm({ song, submitLabel, busy, onSubmit }: SongFormProps) {
   const [draft, setDraft] = useState<SongDraft>(songToDraft(song))
 
   function update<K extends keyof SongDraft>(key: K, value: SongDraft[K]) {
     setDraft((current) => ({ ...current, [key]: value }))
   }
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (!draft.title.trim() || !draft.artist.trim()) return
-    onSubmit(draft)
+    if (!draft.title.trim() || !draft.artist.trim() || busy) return
+    await onSubmit(draft)
   }
 
   return (
@@ -92,7 +93,7 @@ export function SongForm({ song, submitLabel, onSubmit }: SongFormProps) {
           placeholder="https://open.spotify.com/track/..."
         />
       </label>
-      <button type="submit" className="play-button">
+      <button type="submit" className="play-button" disabled={busy}>
         {submitLabel}
       </button>
     </form>

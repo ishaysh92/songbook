@@ -1,8 +1,10 @@
 import { NavLink } from 'react-router-dom'
+import { useSongs } from '../context/SongsContext'
 import { useSpotify } from '../context/SpotifyContext'
 
 export function Header() {
   const { connected, login, clientId } = useSpotify()
+  const { githubConnected, saving } = useSongs()
 
   return (
     <header className="site-header">
@@ -23,6 +25,9 @@ export function Header() {
         </NavLink>
         <NavLink to="/add">שיר חדש</NavLink>
         <NavLink to="/settings">הגדרות</NavLink>
+        {githubConnected && (
+          <span className="spotify-pill">{saving ? 'שומר ל-GitHub…' : 'נשמר ב-GitHub'}</span>
+        )}
         {connected ? (
           <span className="spotify-pill">מחובר לספוטיפיי</span>
         ) : (
