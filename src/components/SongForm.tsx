@@ -26,13 +26,11 @@ type SongFormProps = {
   song?: Song
   submitLabel: string
   busy?: boolean
-  askGithubToken?: boolean
-  onSubmit: (draft: SongDraft, githubToken?: string) => void | Promise<void>
+  onSubmit: (draft: SongDraft) => void | Promise<void>
 }
 
-export function SongForm({ song, submitLabel, busy, askGithubToken, onSubmit }: SongFormProps) {
+export function SongForm({ song, submitLabel, busy, onSubmit }: SongFormProps) {
   const [draft, setDraft] = useState<SongDraft>(songToDraft(song))
-  const [githubToken, setGithubToken] = useState('')
 
   function update<K extends keyof SongDraft>(key: K, value: SongDraft[K]) {
     setDraft((current) => ({ ...current, [key]: value }))
@@ -41,7 +39,7 @@ export function SongForm({ song, submitLabel, busy, askGithubToken, onSubmit }: 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!draft.title.trim() || !draft.artist.trim() || busy) return
-    await onSubmit(draft, githubToken.trim() || undefined)
+    await onSubmit(draft)
   }
 
   return (
@@ -95,19 +93,6 @@ export function SongForm({ song, submitLabel, busy, askGithubToken, onSubmit }: 
           placeholder="https://open.spotify.com/track/..."
         />
       </label>
-      {askGithubToken && (
-        <label className="full">
-          אסימון GitHub (פעם אחת במכשיר הזה)
-          <input
-            type="password"
-            autoComplete="off"
-            required
-            value={githubToken}
-            onChange={(event) => setGithubToken(event.target.value)}
-            placeholder="github_pat_..."
-          />
-        </label>
-      )}
       <button type="submit" className="play-button" disabled={busy}>
         {submitLabel}
       </button>

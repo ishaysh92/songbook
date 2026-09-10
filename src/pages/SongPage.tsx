@@ -1,13 +1,12 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { SpotifyEmbed } from '../components/SpotifyEmbed'
 import { useSongs } from '../context/SongsContext'
-import { useSpotify } from '../context/SpotifyContext'
-import { toSpotifyUri } from '../lib/spotifyTrack'
+import { parseSpotifyTrack } from '../lib/spotifyTrack'
 
 export function SongPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { songs, removeSong, saving } = useSongs()
-  const { playTrack, connected, busy, login, clientId } = useSpotify()
   const song = songs.find((item) => item.id === id)
 
   if (!song) {
@@ -23,12 +22,12 @@ export function SongPage() {
     )
   }
 
-  const canPlay = Boolean(toSpotifyUri(song.spotifyUrl))
+  const canPlay = Boolean(parseSpotifyTrack(song.spotifyUrl))
 
   return (
     <section className="page song-page">
       <Link to="/" className="back-link">
-        ← חזרה לספר
+        חזרה לספר
       </Link>
       <header className="song-hero">
         <p className="eyebrow">{song.artist}</p>
@@ -37,30 +36,8 @@ export function SongPage() {
           {song.writers.length > 0 && <li>מילים: {song.writers.join(', ')}</li>}
           {song.composers.length > 0 && <li>לחן: {song.composers.join(', ')}</li>}
         </ul>
+        {canPlay && <SpotifyEmbed url={song.spotifyUrl} />}
         <div className="song-hero-actions">
-          {canPlay ? (
-            connected ? (
-              <button
-                type="button"
-                className="play-button"
-                disabled={busy}
-                onClick={() => void playTrack(song.spotifyUrl)}
-              >
-                השמע בספוטיפיי
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="play-button"
-                onClick={() => void login()}
-                disabled={!clientId}
-              >
-                התחברו כדי להשמיע
-              </button>
-            )
-          ) : (
-            <p className="muted">עדיין אין קישור ספוטיפיי לשיר הזה.</p>
-          )}
           <Link to={`/edit/${song.id}`} className="ghost-button">
             עריכה
           </Link>

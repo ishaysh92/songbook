@@ -1,0 +1,25 @@
+name: Save songs
+
+on:
+  repository_dispatch:
+    types: [save-songs]
+
+permissions:
+  contents: write
+
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write catalog
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const songs = context.payload.client_payload.songs
+            fs.writeFileSync('public/songs.json', JSON.stringify(songs, null, 2) + '\n')
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update shared songbook catalog
+          file_pattern: public/songs.json

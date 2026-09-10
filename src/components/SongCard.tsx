@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom'
 import type { SearchHit } from '../types'
 import { fieldLabel } from '../lib/search'
-import { toSpotifyUri } from '../lib/spotifyTrack'
-import { useSpotify } from '../context/SpotifyContext'
+import { parseSpotifyTrack } from '../lib/spotifyTrack'
+import { SpotifyEmbed } from './SpotifyEmbed'
 
 export function SongCard({ hit }: { hit: SearchHit }) {
-  const { playTrack, busy } = useSpotify()
   const { song, fields, lyricSnippet } = hit
-  const canPlay = Boolean(toSpotifyUri(song.spotifyUrl))
+  const canPlay = Boolean(parseSpotifyTrack(song.spotifyUrl))
 
   return (
     <article className="song-card">
@@ -26,18 +25,9 @@ export function SongCard({ hit }: { hit: SearchHit }) {
           </p>
         )}
         {lyricSnippet && <p className="lyric-snippet">„{lyricSnippet}”</p>}
+        {canPlay && <SpotifyEmbed url={song.spotifyUrl} compact />}
       </div>
       <div className="song-card-actions">
-        {canPlay && (
-          <button
-            type="button"
-            className="play-button"
-            disabled={busy}
-            onClick={() => void playTrack(song.spotifyUrl)}
-          >
-            השמע
-          </button>
-        )}
         <Link to={`/song/${song.id}`} className="ghost-button">
           מילים
         </Link>
