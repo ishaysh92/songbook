@@ -45,13 +45,12 @@ export function SongsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  const reloadSongs = useCallback(async () => {
-    setSongs(await fetchSharedSongs())
-  }, [])
-
   useEffect(() => {
     let cancelled = false
-    reloadSongs()
+    fetchSharedSongs()
+      .then((next) => {
+        if (!cancelled) setSongs(next)
+      })
       .catch(() => {
         if (!cancelled) setSongs([])
       })
@@ -61,13 +60,13 @@ export function SongsProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [reloadSongs])
+  }, [])
 
   const publish = useCallback(async (next: Song[]) => {
     setSaving(true)
+    setSongs(next)
     try {
       await saveSharedSongs(next)
-      setSongs(next)
     } finally {
       setSaving(false)
     }
@@ -75,22 +74,23 @@ export function SongsProvider({ children }: { children: ReactNode }) {
 
   const saveDraft = useCallback(
     async (draft: SongDraft, id?: string) => {
-      const latest = await fetchSharedSongs()
-      const existing = id ? latest.find((song) => song.id === id) : undefined
+      const latest = await fetchSharedSongs().catch(() => songs)
+      const existing = id
+        ? latest.find((song) => song.id === id) ?? songs.find((song) => song.id === id)
+        : undefined
       const song = draftToSong(draft, existing)
-      const next = mergeSongs(latest, [song], [])
-      await publish(next)
+      await publish(mergeSongs(latest, [song], []))
       return song
     },
-    [publish],
+    [publish, songs],
   )
 
   const removeSong = useCallback(
     async (id: string) => {
-      const latest = await fetchSharedSongs()
+      const latest = await fetchSharedSongs().catch(() => songs)
       await publish(latest.filter((song) => song.id !== id))
     },
-    [publish],
+    [publish, songs],
   )
 
   const value = useMemo(
