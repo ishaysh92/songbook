@@ -36,4 +36,4 @@ VITE_SPOTIFY_CLIENT_ID=your_client_id
 
 הספר נטען מ-`public/songs.json` ב-GitHub, כדי שכל מכשיר יראה את אותו אוסף.
 
-כדי **להוסיף או לערוך** שירים לכל העולם, הדביקו בהגדרות Fine-grained token עם הרשאת Contents: Read and write לריפו. בלי אסימון אפשר רק לצפות.
+כדי **להוסיף או לערוך** שירים, הדביקו Fine-grained token פעם אחת (Contents: Read and write). שמירת שיר מעלה אותו ישר ל-GitHub, בלי סנכרון נפרד.

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { SongForm } from '../components/SongForm'
 import { useSongs } from '../context/SongsContext'
+import { describeGithubError } from '../lib/github'
 import type { SongDraft } from '../types'
 
 export function AddSongPage() {
@@ -11,13 +12,13 @@ export function AddSongPage() {
   const [error, setError] = useState('')
   const existing = id ? songs.find((song) => song.id === id) : undefined
 
-  async function handleSubmit(draft: SongDraft) {
+  async function handleSubmit(draft: SongDraft, githubToken?: string) {
     setError('')
     try {
-      const song = await saveDraft(draft, existing?.id)
+      const song = await saveDraft(draft, existing?.id, githubToken)
       navigate(`/song/${song.id}`)
-    } catch {
-      setError('השיר נשמר במכשיר, אבל לא עלה ל-GitHub. בדקו את האסימון בהגדרות.')
+    } catch (err) {
+      setError(describeGithubError(err))
     }
   }
 
@@ -26,11 +27,12 @@ export function AddSongPage() {
       <p className="eyebrow">{existing ? 'עריכת שיר' : 'שיר חדש'}</p>
       <h1>{existing ? existing.title : 'הוספה לספר'}</h1>
       <p className="lede">
-        מלאו שם, אומן, יוצרים ומילים. אם יש קישור ספוטיפיי, כפתור ההשמעה יופיע מיד.
+        לחצו על הוספת השיר, והוא יישמר ישר ל-GitHub ויופיע בכל מכשיר. אין צורך בסנכרון נפרד.
       </p>
       {!githubConnected && (
         <p className="notice">
-          כדי שהשיר יופיע בכל מכשיר, חברו GitHub ב<Link to="/settings">הגדרות</Link> לפני השמירה.
+          בפעם הראשונה במכשיר הזה הדביקו אסימון GitHub מתחת (ההוראות ב
+          <Link to="/settings">הגדרות</Link>). אחרי זה מספיק לשמור את השיר.
         </p>
       )}
       {error && <p className="notice">{error}</p>}
@@ -38,6 +40,7 @@ export function AddSongPage() {
         song={existing}
         submitLabel={saving ? 'שומר ל-GitHub…' : existing ? 'שמירת שינויים' : 'הוספת השיר'}
         busy={saving}
+        askGithubToken={!githubConnected}
         onSubmit={handleSubmit}
       />
     </section>

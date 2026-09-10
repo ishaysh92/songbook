@@ -8,10 +8,8 @@ export function SettingsPage() {
     exportSongs,
     importSongs,
     githubConnected,
-    connectGithub,
+    saveGithubToken,
     disconnectGithub,
-    reloadSongs,
-    saving,
     syncMessage,
   } = useSongs()
   const {
@@ -46,11 +44,8 @@ export function SettingsPage() {
       <div className="settings-card">
         <h2>שמירה ב-GitHub</h2>
         <p>
-          כדי ששיר שתוסיף יופיע בכל מכשיר, צריך אסימון כתיבה לריפו{' '}
-          <a href={`https://github.com/${repo.owner}/${repo.repo}`} target="_blank" rel="noreferrer">
-            {repo.owner}/{repo.repo}
-          </a>
-          . בלי אסימון אפשר רק לצפות. צפייה לא דורשת אסימון.
+          האסימון נשמר במכשיר פעם אחת. אחרי זה, לחיצה על <strong>הוספת השיר</strong> מעלה אותו ישר
+          ל-GitHub בלי כפתור סנכרון. צפייה בספר לא דורשת אסימון.
         </p>
         <ol className="settings-steps">
           <li>
@@ -81,20 +76,17 @@ export function SettingsPage() {
           <button
             type="button"
             className="play-button"
-            disabled={saving || !token.trim()}
+            disabled={!token.trim()}
             onClick={() => {
-              void connectGithub(token)
+              void saveGithubToken(token)
                 .then(() => {
                   setToken('')
-                  setStatus('GitHub מחובר. מעכשיו שירים נשמרים לכולם.')
+                  setStatus('האסימון נשמר. מעכשיו שמירת שיר עולה ישר ל-GitHub.')
                 })
                 .catch((error: unknown) => setStatus(describeGithubError(error)))
             }}
           >
-            {saving ? 'שומר…' : 'חיבור וסנכרון'}
-          </button>
-          <button type="button" className="ghost-button" onClick={() => void reloadSongs()}>
-            טעינה מחדש
+            שמירת אסימון במכשיר
           </button>
           {githubConnected && (
             <button type="button" className="text-button" onClick={disconnectGithub}>
@@ -104,8 +96,8 @@ export function SettingsPage() {
         </div>
         <p className="muted">
           {githubConnected
-            ? 'המכשיר הזה יכול להוסיף ולערוך שירים לכל העולם.'
-            : 'המכשיר הזה עדיין לא יכול לשמור ל-GitHub.'}
+            ? 'המכשיר מוכן. שמירת שיר מסנכרנת לבד.'
+            : 'אפשר גם להדביק את האסימון ישירות במסך הוספת שיר.'}
         </p>
       </div>
 

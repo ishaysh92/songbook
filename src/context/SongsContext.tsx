@@ -34,13 +34,12 @@ type SongsContextValue = {
   saving: boolean
   githubConnected: boolean
   syncMessage: string
-  saveDraft: (draft: SongDraft, id?: string) => Promise<Song>
+  saveDraft: (draft: SongDraft, id?: string, githubToken?: string) => Promise<Song>
   removeSong: (id: string) => Promise<void>
   exportSongs: () => void
   importSongs: (file: File) => Promise<number>
-  connectGithub: (token: string) => Promise<void>
+  saveGithubToken: (token: string) => Promise<void>
   disconnectGithub: () => void
-  reloadSongs: () => Promise<void>
 }
 
 const SongsContext = createContext<SongsContextValue | null>(null)
@@ -114,8 +113,9 @@ export function SongsProvider({ children }: { children: ReactNode }) {
       if (!getGithubToken()) {
         persistLocalOnly(nextSongs, [])
         setLocalSongs(nextSongs)
-        setSyncMessage(describeGithubError(new Error('NO_TOKEN')))
-        return
+        const error = new Error('NO_TOKEN')
+        setSyncMessage(describeGithubError(error))
+        throw error
       }
       setSaving(true)
       try {
@@ -135,7 +135,12 @@ export function SongsProvider({ children }: { children: ReactNode }) {
   )
 
   const saveDraft = useCallback(
-    async (draft: SongDraft, id?: string) => {
+    async (draft: SongDraft, id?: string, githubToken?: string) => {
+      if (githubToken?.trim()) {
+        await verifyGithubToken(githubToken)
+        setGithubToken(githubToken)
+        setGithubConnected(true)
+      }
       const existing = id ? songs.find((song) => song.id === id) : undefined
       const song = draftToSong(draft, existing)
       const next = mergeSongs(
@@ -191,31 +196,12 @@ export function SongsProvider({ children }: { children: ReactNode }) {
     [publish, songs],
   )
 
-  const connectGithub = useCallback(
-    async (token: string) => {
-      setSaving(true)
-      try {
-        await verifyGithubToken(token)
-        setGithubToken(token)
-        setGithubConnected(true)
-        const remote = (await fetchSongsFromGithub()) ?? []
-        const merged = mergeSongs(remote, loadLocalSongs(), loadDeletedIds())
-        setCatalog(merged)
-        setLocalSongs([])
-        setDeletedIds([])
-        persistLocalOnly([], [])
-        const changed =
-          JSON.stringify(songsToExport(merged)) !== JSON.stringify(songsToExport(remote))
-        if (changed) {
-          await commitSongsToGithub(merged, 'Sync songbook catalog')
-        }
-        setSyncMessage('GitHub מחובר. השירים יישמרו לכל המכשירים.')
-      } finally {
-        setSaving(false)
-      }
-    },
-    [],
-  )
+  const saveGithubToken = useCallback(async (token: string) => {
+    await verifyGithubToken(token)
+    setGithubToken(token)
+    setGithubConnected(true)
+    setSyncMessage('האסימון נשמר במכשיר. שמירת שיר תעלה אותו ישר ל-GitHub.')
+  }, [])
 
   const disconnectGithub = useCallback(() => {
     setGithubToken('')
@@ -234,20 +220,18 @@ export function SongsProvider({ children }: { children: ReactNode }) {
       removeSong,
       exportSongs,
       importSongs,
-      connectGithub,
+      saveGithubToken,
       disconnectGithub,
-      reloadSongs,
     }),
     [
-      connectGithub,
       disconnectGithub,
       exportSongs,
       githubConnected,
       importSongs,
       loading,
-      reloadSongs,
       removeSong,
       saveDraft,
+      saveGithubToken,
       saving,
       songs,
       syncMessage,
